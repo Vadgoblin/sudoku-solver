@@ -1,92 +1,136 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
-
-namespace sudoku_solver
+﻿namespace sudoku_solver
 {
     internal class Solver
     {
         public static void Solve(sbyte[,] table)
         {
-            var possibleValues = new List<sbyte>[9, 9];
-            for (int i = 0; i < 81; i++) possibleValues[i / 9, i % 9] = new List<sbyte>() { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+            var tp = new TablePrinter(table);
+            Console.ReadLine();
+
+            int emptyCells = 81;
+            var possibleValues = new HashSet<sbyte>[9, 9];
+            for (int i = 0; i < 81; i++) possibleValues[i % 9, i / 9] = new HashSet<sbyte>() { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+            for (int i = 0; i < 9; i++)
+            {
+                for(int j = 0; j < 9; j++)
+                {
+                    var value = table[i, j];
+                    if (value != -1)
+                    {
+                        emptyCells--;
+                        possibleValues[i, j] = new HashSet<sbyte>();
+                        RemovePossibleValue(i, j, value, possibleValues);
+                    }
+                }
+            }
 
             uint round = 0;
 
-            while (true)
+            while (emptyCells > 0)
             {
-                for (int i = 0; i < 9; i++) HorizontalEliminer(table, possibleValues, i);
-                for (int i = 0; i < 9; i++) VerticalEliminer(table, possibleValues, i);
-                for (int i = 0; i < 9; i++) BlockEliminer(table, possibleValues, i);
-                UpdateTable(table, possibleValues);
+                int x, y;
+                (x, y) = GetNextCell(table, possibleValues);
+
+                var value = possibleValues[x, y].First();
+                table[x, y] = value;
+                emptyCells--;
+                RemovePossibleValue(x, y, value, possibleValues);
+
+
                 round++;
-                Console.WriteLine();
-                Program.PrintTable(table);
+                tp.Update(table);
+                //Console.ReadLine();
+                Thread.Sleep(300);
+            }
+
+            Console.SetCursorPosition(0, 13);
+            if (!IsSolved(table)) throw new Exception();
+        }
+        private static void RemovePossibleValue(int x, int y,sbyte value, HashSet<sbyte>[,] possibleValues)
+        {
+            for (int i = 0; i < 9; i++)
+            {
+                possibleValues[i, y].Remove(value);
+                possibleValues[x, i].Remove(value);
+            }
+
+            int xoffset = (x / 3) * 3;
+            int yoffset = (y / 3) * 3;
+            for(int i = xoffset; i < xoffset+3; i++) 
+            {
+                for(int j = yoffset; j < yoffset+3; j++)
+                {
+                    possibleValues[i,j].Remove(value);
+                }
             }
         }
-        private static void UpdateTable(sbyte[,] table, List<sbyte>[,] possibleValues)
+        private static void CheckInvalidState(sbyte[,] table, HashSet<sbyte>[,] possibleValues)
         {
             for(int i = 0; i < 9; i++)
             {
-                for(int j =  0; j < 9; j++)
+                for (int j = 0; j < 9; j++)
                 {
-                    if (table[i,j] == -1 && possibleValues[i,j].Count == 1) table[i,j] = possibleValues[i, j][0];
-                }
-            }
-        }
-        private static void HorizontalEliminer(sbyte[,] table, List<sbyte>[,] possibleValues,int line)
-        {
-            for (int i = 0; i < 9; i++)
-            { 
-                var value = table[i, line];
-                if (value != -1)
-                {
-                    for(int j = 0; j < 9 && j != i; j++)
+                    if (possibleValues[i, j].Count == 0 && table[i,j] == -1)
                     {
-                        possibleValues[i, j].Remove(value);
+                        throw new Exception("rip");
                     }
                 }
             }
         }
-        private static void VerticalEliminer(sbyte[,] table, List<sbyte>[,] possibleValues, int row)
+        private static (int,int) GetNextCell(sbyte[,] table, HashSet<sbyte>[,] possibleValues)
         {
-            for (int i = 0; i < 9; i++)
+            for(int i = 0; i < 9; i++)
             {
-                var value = table[row, i];
-                if (value != -1)
+                for(int j = 0; j < 9; j++)
                 {
-                    for (int j = 0; j < 9 && j != i; j++)
-                    {
-                        possibleValues[j,i].Remove(value);
-                    }
+                    if (possibleValues[i, j].Count == 1) return (i, j);
                 }
             }
+            throw new Exception();
         }
-        private static void BlockEliminer(sbyte[,] table, List<sbyte>[,] possibleValues, int blockId)
-        {
-            var xoffset = (blockId % 3) * 3;
-            var yoffset = (blockId / 3) * 3;
 
-            for (int i = xoffset; i < xoffset+3; i++)
+        public static bool IsSolved(sbyte[,] table)
+        {
+            for(int i = 0; i < 9; i++)
             {
-                for (int j = yoffset; j < yoffset+3; j++)
+                var set = new HashSet<sbyte>();
+                for(int j = 0; j < 9; j++)
+                {
+                    var value = table[i,j];
+                    if(value != -1) set.Add(value);
+                }
+                if(set.Count != 9) return false;
+            }
+
+            for(int i = 0; i < 9; i++)
+            {
+                var set = new HashSet<sbyte>();
+                for (int j = 0; j < 9; j++)
                 {
                     var value = table[i, j];
-                    if(value != -1)
+                    if (value != -1) set.Add(value);
+                }
+                if (set.Count != 9) return false;
+            }
+
+            for(int i = 0; i < 9; i+=3)
+            {
+                for(int j = 0; j < 9; j+=3)
+                {
+                    var set = new HashSet<sbyte>();
+                    for (int k = i; k < i+3; k++)
                     {
-                        for(int k = xoffset; k < xoffset+3; k++)
+                        for(int l = j; l < j+3; l++)
                         {
-                            for(int l = yoffset; l < yoffset+3; l++)
-                            {
-                                possibleValues[k,l].Remove(value);//oh no worst case 91 call
-                            }
+                            var value = table[k, l];
+                            if (value != -1) set.Add(value);
                         }
                     }
+                    if (set.Count != 9) return false;
                 }
             }
+
+            return true;
         }
     }
 }

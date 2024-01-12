@@ -1,19 +1,44 @@
-﻿namespace sudoku_solver
+﻿using System.Diagnostics;
+
+namespace sudoku_solver
 {
     internal class Program
     {
         static void Main(string[] args)
         {
+            SolveBatch();
+            return;
             Console.OutputEncoding = System.Text.Encoding.UTF8;
             var table = Parse(".5..83.17...1..4..3.4..56.8....3...9.9.8245....6....7...9....5...729..861.36.72.4");
             //PrintTable(table);
             Solver.Solve(table);
+        }
+        static void SolveBatch()
+        {
+            var sw = new Stopwatch();
+            
+            foreach(var file in Directory.GetFiles("data/"))
+            {
+                var elapsedlist = new List<long>();
+                Console.Write(file);
 
-            Console.ReadLine();
-            Console.ReadLine();
-            Console.ReadLine();
-            Console.ReadLine();
-            Console.ReadLine();
+                var lines = File.ReadLines(file).ToArray();
+                for(int i = 0; i < lines.Length; i++)
+                {
+                    Console.Title = $"{i}/{lines.Length}";
+                    if (!lines[i].StartsWith("#"))
+                    {
+                        var table = Parse(lines[i]);
+
+                        sw.Restart();
+                        Solver.Solve(table);
+                        var elapsed = sw.ElapsedTicks;
+                        elapsedlist.Add(elapsed);
+                    }
+                }
+
+                Console.WriteLine(" "+elapsedlist.Average());
+            }
         }
         static sbyte[,] Parse(string input)
         {

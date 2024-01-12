@@ -4,8 +4,8 @@
     {
         public static void Solve(sbyte[,] table)
         {
-            var tp = new TablePrinter(table);
-            Console.ReadLine();
+            //var tp = new TablePrinter(table);
+            //Console.ReadLine();
 
             int emptyCells = 81;
             var possibleValues = new HashSet<sbyte>[9, 9];
@@ -38,13 +38,13 @@
 
 
                 round++;
-                tp.Update(table);
+                //tp.Update(table);
                 //Console.ReadLine();
-                Thread.Sleep(300);
+                //Thread.Sleep(200);
             }
 
-            Console.SetCursorPosition(0, 13);
-            if (!IsSolved(table)) throw new Exception();
+            //Console.SetCursorPosition(0, 13);
+            //if (!IsSolved(table)) throw new Exception();
         }
         private static void RemovePossibleValue(int x, int y,sbyte value, HashSet<sbyte>[,] possibleValues)
         {

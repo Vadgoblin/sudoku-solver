@@ -2,7 +2,7 @@
 {
     internal class Solver
     {
-        public static void Solve(sbyte[,] table)
+        public static bool Solve(sbyte[,] table)
         {
             //var tp = new TablePrinter(table);
             //Console.ReadLine();
@@ -28,13 +28,29 @@
 
             while (emptyCells > 0)
             {
-                int x, y;
-                (x, y) = GetNextCell(table, possibleValues);
+                int x, y, possibleSolution;
+                (x, y, possibleSolution) = GetNextCell(table, possibleValues);
 
-                var value = possibleValues[x, y].First();
-                table[x, y] = value;
-                emptyCells--;
-                RemovePossibleValue(x, y, value, possibleValues);
+                if (possibleSolution == 1)
+                {
+                    var value = possibleValues[x, y].First();
+                    table[x, y] = value;
+                    emptyCells--;
+                    RemovePossibleValue(x, y, value, possibleValues);
+                }
+                else if (possibleSolution == -1) return false;
+                else
+                {
+                    foreach (var value in possibleValues[x, y])
+                    {
+                        var tmpTable = (sbyte[,])table.Clone();
+                        tmpTable[x, y] = value;
+                        if (Solve(tmpTable))
+                        {
+                            table[x, y] = value;
+                        }
+                    }
+                }
 
 
                 round++;
@@ -45,6 +61,7 @@
 
             //Console.SetCursorPosition(0, 13);
             //if (!IsSolved(table)) throw new Exception();
+            return true;
         }
         private static void RemovePossibleValue(int x, int y,sbyte value, HashSet<sbyte>[,] possibleValues)
         {
@@ -77,16 +94,27 @@
                 }
             }
         }
-        private static (int,int) GetNextCell(sbyte[,] table, HashSet<sbyte>[,] possibleValues)
+        private static (int,int,int) GetNextCell(sbyte[,] table, HashSet<sbyte>[,] possibleValues)
         {
+            int minpossibleSolution = 999;
+            int minX = -1;
+            int minY = -1;
+
             for(int i = 0; i < 9; i++)
             {
                 for(int j = 0; j < 9; j++)
                 {
-                    if (possibleValues[i, j].Count == 1) return (i, j);
+                    if (possibleValues[i, j].Count == 1) return (i, j,1);
+                    else if(minpossibleSolution < possibleValues[i, j].Count)
+                    {
+                        minpossibleSolution = possibleValues[i, j].Count;
+                        minX = i;
+                        minY = j;
+                    }
                 }
             }
-            throw new Exception();
+            if(minpossibleSolution == 0 || minpossibleSolution == 999) return (-1,-1,-1);
+            else return(minX,minY, minpossibleSolution);
         }
 
         public static bool IsSolved(sbyte[,] table)

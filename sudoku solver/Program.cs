@@ -7,6 +7,7 @@ namespace sudoku_solver
         static void Main(string[] args)
         {
             SolveBatch();
+            Console.ReadLine();
             return;
             Console.OutputEncoding = System.Text.Encoding.UTF8;
             var table = Parse(".5..83.17...1..4..3.4..56.8....3...9.9.8245....6....7...9....5...729..861.36.72.4");
@@ -26,7 +27,7 @@ namespace sudoku_solver
                 for(int i = 0; i < lines.Length; i++)
                 {
                     Console.Title = $"{i}/{lines.Length}";
-                    if (!lines[i].StartsWith("#"))
+                    if (!lines[i].StartsWith("#") && lines[i] != "")
                     {
                         var table = Parse(lines[i]);
 
@@ -37,7 +38,8 @@ namespace sudoku_solver
                     }
                 }
 
-                Console.WriteLine(" "+elapsedlist.Average());
+                double microseconds = (long)elapsedlist.Average() / (double)(TimeSpan.TicksPerMillisecond / 1000);
+                Console.WriteLine($" {Math.Round(microseconds,1)} μs");
             }
         }
         static sbyte[,] Parse(string input)

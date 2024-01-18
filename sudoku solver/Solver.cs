@@ -4,7 +4,7 @@
     {
         public static sbyte[,]? Solve(sbyte[,] table)
         {
-            //var tp = new TablePrinter(table);
+            var tp = new TablePrinter(table);
 
             int emptyCells = 81;
             var possibleValues = new HashSet<sbyte>[9, 9];
@@ -27,17 +27,17 @@
 
             while (emptyCells > 0)
             {
-                int x, y, possibleSolution;
-                (x, y, possibleSolution) = GetNextCell(table, possibleValues);
+                int x, y, possibleSolutionCount;
+                (x, y, possibleSolutionCount) = GetNextCell(table, possibleValues);
 
-                if (possibleSolution == 1)
+                if (possibleSolutionCount == 1)
                 {
                     var value = possibleValues[x, y].First();
                     table[x, y] = value;
                     emptyCells--;
                     RemovePossibleValue(x, y, value, possibleValues);
                 }
-                else if (possibleSolution == -1) return null;
+                else if (possibleSolutionCount == -1) return null;
                 else
                 {
                     foreach (var value in possibleValues[x, y])
@@ -53,16 +53,13 @@
                     return null;
                 }
 
-                //Console.SetCursorPosition(0, 0);
-                //TablePrinter.SimplePrint(table);
-               // Console.CursorVisible = false;
                 round++;
-                //tp.Update(table);
+                tp.Update(table);
                 //Console.ReadLine();
-                //Thread.Sleep(200);
+                Thread.Sleep(20);
             }
 
-            //Console.SetCursorPosition(0, 13);
+            Console.SetCursorPosition(0, 13);
             return table;
         }
         private static void RemovePossibleValue(int x, int y,sbyte value, HashSet<sbyte>[,] possibleValues)

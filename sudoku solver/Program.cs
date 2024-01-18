@@ -1,35 +1,15 @@
-﻿using System.Diagnostics;
-
-namespace sudoku_solver
+﻿namespace sudoku_solver
 {
     internal class Program
     {
         static void Main(string[] args)
         {
-            var dataQueue = new Queue<string>();
-            foreach (var file in Directory.GetFiles("data/"))
-            {
-                foreach(var line in File.ReadAllLines(file))
-                {
-                    if (!line.StartsWith("#") && line != "")
-                    {
-                        dataQueue.Enqueue(line);
-                    }
-                }
-            }
-
-            var numberOfThreads = Environment.ProcessorCount * 2;
-
-            List<Task> tasks = new List<Task>();
-            for (int i = 0; i < numberOfThreads; i++)
-            {
-                tasks.Add(Task.Run(() => ProcessQueue(dataQueue)));
-            }
-
-            // Wait for all tasks to complete
-            Task.WaitAll(tasks.ToArray());
+            Console.CursorVisible = false;
+            //var table = Parse(".5..83.17...1..4..3.4..56.8....3...9.9.8245....6....7...9....5...729..861.36.72.4");
+            var table = Parse("..................3.4..56.8....3...9.9.8245....6....7...9....5...729..861.36.72.4");
+            var solution = Solver.Solve(table);
+            if (!IsSolvedCorrectly(solution)) throw new Exception();
             Console.ReadLine();
-
         }
         
         static sbyte[,] Parse(string input)
@@ -78,28 +58,6 @@ namespace sudoku_solver
             }
 
             return true;
-        }
-        static void ProcessQueue(Queue<string> dataQueue)
-        {
-            while (true)
-            {
-                Console.Title = ""+dataQueue.Count();
-                string value;
-                lock (dataQueue)
-                {
-                    if (dataQueue.Count == 0)
-                    {
-                        // Queue is empty, exit the thread
-                        return;
-                    }
-
-                    value = dataQueue.Dequeue();
-                }
-
-                var table = Parse(value);
-                var solution = Solver.Solve(table);
-                if(!IsSolvedCorrectly(solution)) Console.WriteLine("invalid solution for: " + value);
-            }
         }
     }
 }

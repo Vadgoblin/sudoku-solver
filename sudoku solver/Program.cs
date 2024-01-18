@@ -6,42 +6,32 @@ namespace sudoku_solver
     {
         static void Main(string[] args)
         {
-            SolveBatch();
-            Console.ReadLine();
-            return;
-            Console.OutputEncoding = System.Text.Encoding.UTF8;
-            var table = Parse(".5..83.17...1..4..3.4..56.8....3...9.9.8245....6....7...9....5...729..861.36.72.4");
-            //PrintTable(table);
-            Solver.Solve(table);
-        }
-        static void SolveBatch()
-        {
-            var sw = new Stopwatch();
-            
-            foreach(var file in Directory.GetFiles("data/"))
+            var dataQueue = new Queue<string>();
+            foreach (var file in Directory.GetFiles("data/"))
             {
-                var elapsedlist = new List<long>();
-                Console.Write(file);
-
-                var lines = File.ReadLines(file).ToArray();
-                for(int i = 0; i < lines.Length; i++)
+                foreach(var line in File.ReadAllLines(file))
                 {
-                    Console.Title = $"{i}/{lines.Length}";
-                    if (!lines[i].StartsWith("#") && lines[i] != "")
+                    if (!line.StartsWith("#") && line != "")
                     {
-                        var table = Parse(lines[i]);
-
-                        sw.Restart();
-                        Solver.Solve(table);
-                        var elapsed = sw.ElapsedTicks;
-                        elapsedlist.Add(elapsed);
+                        dataQueue.Enqueue(line);
                     }
                 }
-
-                double microseconds = (long)elapsedlist.Average() / (double)(TimeSpan.TicksPerMillisecond / 1000);
-                Console.WriteLine($" {Math.Round(microseconds,1)} μs");
             }
+
+            var numberOfThreads = Environment.ProcessorCount * 2;
+
+            List<Task> tasks = new List<Task>();
+            for (int i = 0; i < numberOfThreads; i++)
+            {
+                tasks.Add(Task.Run(() => ProcessQueue(dataQueue)));
+            }
+
+            // Wait for all tasks to complete
+            Task.WaitAll(tasks.ToArray());
+            Console.ReadLine();
+
         }
+        
         static sbyte[,] Parse(string input)
         {
             var table = new sbyte[9,9];
@@ -56,23 +46,60 @@ namespace sudoku_solver
             }
             return table;
         }
-        public static void PrintTable(sbyte[,] table)
+        static bool IsSolvedCorrectly(sbyte[,] table)
         {
-            Console.WriteLine("┌───────┬───────┬───────┐");
-            for (int y = 0; y < 9; y++)
+            for (int i = 0; i < 9; i++)
             {
-                Console.Write("│ ");
-                for (int x = 0; x < 9; x++)
+                var vertical = new HashSet<sbyte>();
+                var horizontal = new HashSet<sbyte>();
+                for(int j = 0; j < 9; j++)
                 {
-                    sbyte value = table[x,y];
-                    Console.Write(value != -1 ? $"{value}" : " ");
-                    if ((x + 1) % 3 == 0) Console.Write(" │ ");
-                    else Console.Write(" ");
+                    if (table[i, j] == -1) return false;
+                    vertical.Add(table[i, j]);
+                    horizontal.Add(table[j, i]);
                 }
-                Console.WriteLine();
-                if (y == 2 || y == 5) Console.WriteLine("├───────┼───────┼───────┤");
+                for(sbyte j = 1;j <= 9; j++) if(!(vertical.Contains(j) && horizontal.Contains(j))) return false;
             }
-            Console.WriteLine("└───────┴───────┴───────┘");
+
+            for(int i = 0; i < 9; i += 3)
+            {
+                for(int j = 0; j < 9; j += 3)
+                {
+                    var set = new HashSet<sbyte>();
+                    for(int k = i; k < i + 3; k++)
+                    {
+                        for(int l = j; l < j + 3; l++)
+                        {
+                            set.Add(table[k, l]);
+                        }
+                    }
+                    for (sbyte k = 1; k <= 9; k++) if (!set.Contains(k)) return false;
+                }
+            }
+
+            return true;
+        }
+        static void ProcessQueue(Queue<string> dataQueue)
+        {
+            while (true)
+            {
+                Console.Title = ""+dataQueue.Count();
+                string value;
+                lock (dataQueue)
+                {
+                    if (dataQueue.Count == 0)
+                    {
+                        // Queue is empty, exit the thread
+                        return;
+                    }
+
+                    value = dataQueue.Dequeue();
+                }
+
+                var table = Parse(value);
+                var solution = Solver.Solve(table);
+                if(!IsSolvedCorrectly(solution)) Console.WriteLine("invalid solution for: " + value);
+            }
         }
     }
 }

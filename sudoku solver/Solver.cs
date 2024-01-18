@@ -2,10 +2,9 @@
 {
     internal class Solver
     {
-        public static bool Solve(sbyte[,] table)
+        public static sbyte[,]? Solve(sbyte[,] table)
         {
             //var tp = new TablePrinter(table);
-            //Console.ReadLine();
 
             int emptyCells = 81;
             var possibleValues = new HashSet<sbyte>[9, 9];
@@ -38,21 +37,25 @@
                     emptyCells--;
                     RemovePossibleValue(x, y, value, possibleValues);
                 }
-                else if (possibleSolution == -1) return false;
+                else if (possibleSolution == -1) return null;
                 else
                 {
                     foreach (var value in possibleValues[x, y])
                     {
                         var tmpTable = (sbyte[,])table.Clone();
                         tmpTable[x, y] = value;
-                        if (Solve(tmpTable))
+                        var result = Solve(tmpTable);
+                        if (result != null)
                         {
-                            table[x, y] = value;
+                            return result;
                         }
                     }
+                    return null;
                 }
 
-
+                //Console.SetCursorPosition(0, 0);
+                //TablePrinter.SimplePrint(table);
+               // Console.CursorVisible = false;
                 round++;
                 //tp.Update(table);
                 //Console.ReadLine();
@@ -60,8 +63,7 @@
             }
 
             //Console.SetCursorPosition(0, 13);
-            //if (!IsSolved(table)) throw new Exception();
-            return true;
+            return table;
         }
         private static void RemovePossibleValue(int x, int y,sbyte value, HashSet<sbyte>[,] possibleValues)
         {
@@ -81,19 +83,6 @@
                 }
             }
         }
-        private static void CheckInvalidState(sbyte[,] table, HashSet<sbyte>[,] possibleValues)
-        {
-            for(int i = 0; i < 9; i++)
-            {
-                for (int j = 0; j < 9; j++)
-                {
-                    if (possibleValues[i, j].Count == 0 && table[i,j] == -1)
-                    {
-                        throw new Exception("rip");
-                    }
-                }
-            }
-        }
         private static (int,int,int) GetNextCell(sbyte[,] table, HashSet<sbyte>[,] possibleValues)
         {
             int minpossibleSolution = 999;
@@ -104,8 +93,9 @@
             {
                 for(int j = 0; j < 9; j++)
                 {
-                    if (possibleValues[i, j].Count == 1) return (i, j,1);
-                    else if(minpossibleSolution < possibleValues[i, j].Count)
+                    if (possibleValues[i, j].Count == 1)
+                        return (i, j,1);
+                    else if (table[i, j] == -1 && possibleValues[i, j].Count < minpossibleSolution)
                     {
                         minpossibleSolution = possibleValues[i, j].Count;
                         minX = i;
@@ -115,50 +105,6 @@
             }
             if(minpossibleSolution == 0 || minpossibleSolution == 999) return (-1,-1,-1);
             else return(minX,minY, minpossibleSolution);
-        }
-
-        public static bool IsSolved(sbyte[,] table)
-        {
-            for(int i = 0; i < 9; i++)
-            {
-                var set = new HashSet<sbyte>();
-                for(int j = 0; j < 9; j++)
-                {
-                    var value = table[i,j];
-                    if(value != -1) set.Add(value);
-                }
-                if(set.Count != 9) return false;
-            }
-
-            for(int i = 0; i < 9; i++)
-            {
-                var set = new HashSet<sbyte>();
-                for (int j = 0; j < 9; j++)
-                {
-                    var value = table[i, j];
-                    if (value != -1) set.Add(value);
-                }
-                if (set.Count != 9) return false;
-            }
-
-            for(int i = 0; i < 9; i+=3)
-            {
-                for(int j = 0; j < 9; j+=3)
-                {
-                    var set = new HashSet<sbyte>();
-                    for (int k = i; k < i+3; k++)
-                    {
-                        for(int l = j; l < j+3; l++)
-                        {
-                            var value = table[k, l];
-                            if (value != -1) set.Add(value);
-                        }
-                    }
-                    if (set.Count != 9) return false;
-                }
-            }
-
-            return true;
         }
     }
 }

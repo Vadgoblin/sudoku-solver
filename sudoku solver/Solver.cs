@@ -88,8 +88,7 @@
             {
                 for(int i = 0; i < 9; i++)
                 {
-                    if (possibleValues[i, j].Count == 1)
-                        return (i, j,1);
+                    if (possibleValues[i, j].Count == 1) return (i, j,1);
                     else if (table[i, j] == -1 && possibleValues[i, j].Count < minpossibleSolution)
                     {
                         minpossibleSolution = possibleValues[i, j].Count;

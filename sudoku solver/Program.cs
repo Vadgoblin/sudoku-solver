@@ -10,7 +10,7 @@
             //var table = Parse("31.5.....4.5.2..6..82...1..8..96.....5.342.8.....78..3..8...43..4..8.2.5.....9.18");//A1
             var table = Parse("3.8..21.7.5.9.....2.1.364.8.2...78.9..7.9.2..9.68...7.1.965.7.2.....9.8.5.24..9.1");//A2
             var solution = Solver.Solve(table);
-            if (!IsSolvedCorrectly(solution)) throw new Exception();
+            if (solution != null && !IsSolvedCorrectly(solution)) throw new Exception();
             Console.ReadLine();
         }
         

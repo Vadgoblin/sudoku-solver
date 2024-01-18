@@ -2,7 +2,7 @@
 {
     internal class Solver
     {
-        public static sbyte[,]? Solve(sbyte[,] table)
+        public static bool Solve(sbyte[,] table, List<sbyte[,]> solutions)
         {
             int emptyCells = 81;
             var possibleValues = new HashSet<sbyte>[9, 9];
@@ -35,30 +35,23 @@
                     emptyCells--;
                     RemovePossibleValue(x, y, value, possibleValues);
                 }
-                else if (possibleSolutionCount == -1) return null;
+                else if (possibleSolutionCount == -1) return false;
                 else
                 {
                     foreach (var value in possibleValues[x, y])
                     {
                         var tmpTable = (sbyte[,])table.Clone();
                         tmpTable[x, y] = value;
-                        var result = Solve(tmpTable);
-                        if (result != null)
-                        {
-                            return result;
-                        }
+                        var result = Solve(tmpTable, solutions);
                     }
-                    return null;
+                    return false;
                 }
 
                 round++;
-                Console.SetCursorPosition(0,0);
-                TablePrinter.SimplePrint(table);
-                Thread.Sleep(20);
             }
 
-            Console.SetCursorPosition(0, 13);
-            return table;
+            solutions.Add(table);
+            return true;
         }
         private static void RemovePossibleValue(int x, int y,sbyte value, HashSet<sbyte>[,] possibleValues)
         {

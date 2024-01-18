@@ -4,8 +4,6 @@
     {
         public static sbyte[,]? Solve(sbyte[,] table)
         {
-            var tp = new TablePrinter(table);
-
             int emptyCells = 81;
             var possibleValues = new HashSet<sbyte>[9, 9];
             for (int i = 0; i < 81; i++) possibleValues[i % 9, i / 9] = new HashSet<sbyte>() { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
@@ -54,8 +52,8 @@
                 }
 
                 round++;
-                tp.Update(table);
-                //Console.ReadLine();
+                Console.SetCursorPosition(0,0);
+                TablePrinter.SimplePrint(table);
                 Thread.Sleep(20);
             }
 
@@ -86,9 +84,9 @@
             int minX = -1;
             int minY = -1;
 
-            for(int i = 0; i < 9; i++)
+            for(int j = 0; j < 9; j++)
             {
-                for(int j = 0; j < 9; j++)
+                for(int i = 0; i < 9; i++)
                 {
                     if (possibleValues[i, j].Count == 1)
                         return (i, j,1);

@@ -21,8 +21,6 @@
                 }
             }
 
-            uint round = 0;
-
             while (emptyCells > 0)
             {
                 int x, y, possibleSolutionCount;
@@ -43,15 +41,12 @@
                         var tmpTable = (sbyte[,])table.Clone();
                         tmpTable[x, y] = value;
                         var result = Solve(tmpTable);
-                        if (result != null)
-                        {
-                            return result;
-                        }
+                        if (result != null) return result;
                     }
                     return null;
                 }
 
-                round++;
+
                 Console.SetCursorPosition(0,0);
                 TablePrinter.SimplePrint(table);
                 Thread.Sleep(20);
@@ -80,7 +75,7 @@
         }
         private static (int,int,int) GetNextCell(sbyte[,] table, HashSet<sbyte>[,] possibleValues)
         {
-            int minpossibleSolution = 999;
+            int minPossibleSolutionCount = 999;
             int minX = -1;
             int minY = -1;
 
@@ -89,16 +84,16 @@
                 for(int i = 0; i < 9; i++)
                 {
                     if (possibleValues[i, j].Count == 1) return (i, j,1);
-                    else if (table[i, j] == -1 && possibleValues[i, j].Count < minpossibleSolution)
+                    else if (table[i, j] == -1 && possibleValues[i, j].Count < minPossibleSolutionCount)
                     {
-                        minpossibleSolution = possibleValues[i, j].Count;
+                        minPossibleSolutionCount = possibleValues[i, j].Count;
                         minX = i;
                         minY = j;
                     }
                 }
             }
-            if(minpossibleSolution == 0 || minpossibleSolution == 999) return (-1,-1,-1);
-            else return(minX,minY, minpossibleSolution);
+            if(minPossibleSolutionCount == 0 || minPossibleSolutionCount == 999) return (-1,-1,-1);
+            else return(minX,minY, minPossibleSolutionCount);
         }
     }
 }

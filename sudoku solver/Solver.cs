@@ -45,14 +45,7 @@
                     }
                     return null;
                 }
-
-
-                Console.SetCursorPosition(0,0);
-                TablePrinter.SimplePrint(table);
-                Thread.Sleep(20);
             }
-
-            Console.SetCursorPosition(0, 13);
             return table;
         }
         private static void RemovePossibleValue(int x, int y,sbyte value, HashSet<sbyte>[,] possibleValues)

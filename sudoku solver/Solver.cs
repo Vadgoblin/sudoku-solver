@@ -4,56 +4,83 @@
     {
         public static sbyte[,]? Solve(sbyte[,] table)
         {
+            var (emptyCells, possibleValues) = Initialise(table);
+
+
+            return Solve(table, possibleValues, ref emptyCells);
+        }
+
+        private static sbyte[,]? Solve(sbyte[,] table, HashSet<sbyte>[,] possibleValues, ref int emptyCells)
+        {
+            while (emptyCells > 0)
+            {
+                var (x, y, possibleSolutionCount) = GetNextCell(table, possibleValues);
+
+                if (possibleSolutionCount >= 1)
+                {
+                    foreach (var value in possibleValues[x, y].ToArray())
+                    {
+                        table[x, y] = value;
+                        emptyCells--;
+                        var deletedPossibleValues = RemovePossibleValues(x, y, value, possibleValues);
+
+                        var result = Solve(table, possibleValues, ref emptyCells);
+                        if (result != null) return result;
+
+                        emptyCells++;
+                        RestoreDeletedPossibleValues(possibleValues, deletedPossibleValues);
+                        table[x, y] = -1;
+                    }
+                    return null;
+                }
+                else return null;
+            }
+            return table;
+        }
+
+        private static (int, HashSet<sbyte>[,]) Initialise(sbyte[,] table)
+        {
             int emptyCells = 81;
             var possibleValues = new HashSet<sbyte>[9, 9];
             for (int i = 0; i < 81; i++) possibleValues[i % 9, i / 9] = new HashSet<sbyte>() { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
             for (int i = 0; i < 9; i++)
             {
-                for(int j = 0; j < 9; j++)
+                for (int j = 0; j < 9; j++)
                 {
                     var value = table[i, j];
                     if (value != -1)
                     {
                         emptyCells--;
                         possibleValues[i, j] = new HashSet<sbyte>();
-                        RemovePossibleValue(i, j, value, possibleValues);
+                        RemovePossibleValues(i, j, value, possibleValues);
                     }
                 }
             }
 
-            while (emptyCells > 0)
-            {
-                int x, y, possibleSolutionCount;
-                (x, y, possibleSolutionCount) = GetNextCell(table, possibleValues);
-
-                if (possibleSolutionCount == 1)
-                {
-                    var value = possibleValues[x, y].First();
-                    table[x, y] = value;
-                    emptyCells--;
-                    RemovePossibleValue(x, y, value, possibleValues);
-                }
-                else if (possibleSolutionCount == -1) return null;
-                else
-                {
-                    foreach (var value in possibleValues[x, y])
-                    {
-                        var tmpTable = (sbyte[,])table.Clone();
-                        tmpTable[x, y] = value;
-                        var result = Solve(tmpTable);
-                        if (result != null) return result;
-                    }
-                    return null;
-                }
-            }
-            return table;
+            return (emptyCells, possibleValues);
         }
-        private static void RemovePossibleValue(int x, int y,sbyte value, HashSet<sbyte>[,] possibleValues)
+        private static List<(int, int, sbyte)> RemovePossibleValues(int x, int y,sbyte value, HashSet<sbyte>[,] possibleValues)
         {
+            var deletedValues = new List<(int, int, sbyte)>();
+
+            foreach(var v in possibleValues[x, y])
+            {
+                possibleValues[x,y].Remove(v);
+                deletedValues.Add((x, y, v));
+            }
             for (int i = 0; i < 9; i++)
             {
-                possibleValues[i, y].Remove(value);
-                possibleValues[x, i].Remove(value);
+                if (possibleValues[i, y].Contains(value))
+                {
+                    possibleValues[i, y].Remove(value);
+                    deletedValues.Add((i, y, value));
+                }
+                if (possibleValues[x, i].Contains(value))
+                {
+                    possibleValues[x, i].Remove(value);
+                    deletedValues.Add((x,y, value));
+                }
+                
             }
 
             int xoffset = (x / 3) * 3;
@@ -62,8 +89,22 @@
             {
                 for(int j = yoffset; j < yoffset+3; j++)
                 {
-                    possibleValues[i,j].Remove(value);
+                    if (possibleValues[i, j].Contains(value))
+                    {
+                        possibleValues[i, j].Remove(value);
+                        deletedValues.Add((i,j, value));
+                    }
                 }
+            }
+
+            return deletedValues;
+        }
+
+        private static void RestoreDeletedPossibleValues(HashSet<sbyte>[,] possibleValues, List<(int, int, sbyte)> deletedPossibleValues)
+        {
+            foreach(var (x,y, value) in deletedPossibleValues)
+            {
+                possibleValues[x, y].Add(value);
             }
         }
         private static (int,int,int) GetNextCell(sbyte[,] table, HashSet<sbyte>[,] possibleValues)

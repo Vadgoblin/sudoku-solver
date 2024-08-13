@@ -22,38 +22,16 @@
                     var values = possibleValues[x, y].ToArray();
                     foreach (var value in values)
                     {
-                        //Console.WriteLine($"{x} {y} {value}");
-                        //var c = (HashSet<sbyte>[,])possibleValues.Clone();
+                        emptyCells--;
                         table[x, y] = value;
                         var removePositions = RemovePossibleValue(x, y, value, possibleValues);
-
-                        //TablePrinter.PrintPossibleValues(c);
-                        //Console.WriteLine();
-
-                        //var (a, b) = Initialize(table);
-                        //TablePrinter.PrintPossibleValues(b);
-                        //Console.ReadLine();
-                        emptyCells--;
-                        //var r = CmpPossibleValues(possibleValues, b);
-                        //if (!r)
-                        //{
-                        //    TablePrinter.SimplePrint(table);
-                        //    Console.WriteLine();
-                        //    TablePrinter.PrintPossibleValues(possibleValues);
-                        //    Console.WriteLine();
-                        //    TablePrinter.PrintPossibleValues(b);
-                        //    Console.ReadLine();
-                        //}
+                        
                         var result = asd(emptyCells, table, possibleValues);
-                        //var result = Solve(table);
                         if (result != null) return result;
-                        //Console.WriteLine("ki");
+
                         RestorePossibleValue(removePositions, value, possibleValues);
-                        //TablePrinter.PrintPossibleValues(possibleValues);
-                        //possibleValues = c;
                         table[x, y] = -1;
                         emptyCells++;
-                        //Console.ReadLine();
                     }
                     return null;
                 }

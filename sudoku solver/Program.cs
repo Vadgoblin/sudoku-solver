@@ -6,15 +6,18 @@ namespace sudoku_solver
     {
         static void Main(string[] args)
         {
-            var table = Parse("6..3..2....7....49.........32.6............871............47....5....3......9....");
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
+            var table = Parse(".1.....34....795...293..6...3.6.742..861...9.....5....94.2.587.8...6.2..67..84..3");
+            //var table = Parse("6..3..2....7....49.........32.6............871............47....5....3......9....");
 
             var sw = new Stopwatch();
             sw.Start();
             var solution = Solver.Solve(table);
             sw.Stop();
 
+            if (solution == null) throw new Exception();
             if (solution != null && !IsSolvedCorrectly(solution)) throw new Exception();
-
+            TablePrinter.SimplePrint(solution);
             Console.WriteLine(sw.Elapsed);
         }
         

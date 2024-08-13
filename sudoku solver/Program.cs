@@ -6,16 +6,12 @@ namespace sudoku_solver
     {
         static void Main(string[] args)
         {
-            var table = Parse("6..3..2....7....49.........32.6............871............47....5....3......9....");
-
-            var sw = new Stopwatch();
-            sw.Start();
-            var solution = Solver.Solve(table);
-            sw.Stop();
-
-            if (solution != null && !IsSolvedCorrectly(solution)) throw new Exception();
-
-            Console.WriteLine(sw.Elapsed);
+            while (true)
+            {
+                Benchmark();
+                Console.WriteLine();
+            }
+            Console.ReadLine();
         }
         
         static sbyte[,] Parse(string input)
@@ -64,6 +60,35 @@ namespace sudoku_solver
             }
 
             return true;
+        }
+
+        static void Benchmark()
+        {
+            foreach (var file in Directory.GetFiles("data"))
+            {
+                var tableList = new List<sbyte[,]>();
+
+                var sr = new StreamReader(file);
+                while (!sr.EndOfStream)
+                {
+                    var line = sr.ReadLine();
+                    if (line == null || line.StartsWith("#") || line == "") continue;
+                    tableList.Add( Parse(line));
+                }
+
+                int count = 0;
+                var sw = new Stopwatch();
+                sw.Start();
+                foreach (var table in tableList)
+                {
+                    Solver.Solve(table);
+                    count++;
+                    //Console.Title = $"{file} {count}";
+                }
+                sw.Stop();
+
+                Console.WriteLine($"{file}: {(sw.Elapsed.TotalMicroseconds / 1000000).ToString("0.000000")}");
+            }
         }
     }
 }

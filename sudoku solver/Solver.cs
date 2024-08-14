@@ -39,7 +39,7 @@
             return table;
         }
 
-        public static (int, HashSet<sbyte>[,]) Initialize(sbyte[,] table)
+        private static (int, HashSet<sbyte>[,]) Initialize(sbyte[,] table)
         {
             int emptyCells = 81;
             var possibleValues = new HashSet<sbyte>[9, 9];

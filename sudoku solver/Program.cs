@@ -1,24 +1,41 @@
-﻿using System.Diagnostics;
+﻿using System.Text;
 
 namespace sudoku_solver
 {
     internal class Program
     {
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
-            Console.OutputEncoding = System.Text.Encoding.UTF8;
-            var table = Parse(".1.....34....795...293..6...3.6.742..861...9.....5....94.2.587.8...6.2..67..84..3");
-            //var table = Parse("6..3..2....7....49.........32.6............871............47....5....3......9....");
+            if (args.Length != 1) return -1;
+            if (args[0].Length != 81) return -2;
 
-            var sw = new Stopwatch();
-            sw.Start();
-            var solution = Solver.Solve(table);
-            sw.Stop();
+            sbyte[,] table; 
+            try
+            {
+                table = Parse(args[0]);
+            }
+            catch { return -2; }
 
-            if (solution == null) throw new Exception();
-            if (solution != null && !IsSolvedCorrectly(solution)) throw new Exception();
-            TablePrinter.SimplePrint(solution);
-            Console.WriteLine(sw.Elapsed);
+            sbyte[,]? solution;
+            try
+            {
+                solution = Solver.Solve(table);
+            }
+            catch{ return -3; }
+
+            if (solution == null) return 1;
+            
+            if(!IsSolvedCorrectly(solution)) return -4;
+
+            var sb = new StringBuilder();
+            
+            for(int i = 0; i < solution.Length; i++)
+            {
+                sb.Append(solution[i % 9, i / 9]);
+            }
+            Console.WriteLine(sb.ToString());
+
+            return 0;
         }
         
         static sbyte[,] Parse(string input)
